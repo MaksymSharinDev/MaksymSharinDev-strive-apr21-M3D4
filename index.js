@@ -4,41 +4,63 @@ window.onload = () => {
             .then(response => response.json())
             .then(data => obj['productFetchData'] = data)
     }
-    const renderProducts = function (prodsRawArr = []) {
-            prodsRawArr.forEach(
-                (el, i, a) => {
+    const renderProducts = function (prodsRawArr , cartList ) {
+        prodsRawArr.forEach(
+            (el, i, a) => {
+                    el['productID'] = `product${i}`
                     let prodCard = document.createElement('div')
-                    $('#productsListing .row')[0].append(prodCard)
-                    prodCard.outerHTML = `
-                    <div class="col mb-4">
-                        <div class="card">
+                    let productsListingElem = $('#productsListing .row')[0]
+
+                    productsListingElem.append(prodCard)
+
+                    let cardHTML = `
+                    <div class="col mb-4" >
+                        <div class="card" id="${el['productID']}">
                         <img src=" ${el['img']} " class="card-img-top">
                         <div class="card-body">
                             <h5 class="card-title">
                             ${el['title']}
                             </h5>
-                            <div class="d-flex">
-                                <button class="btn btn-primary" type="submit">Add to Card</button>
-                                <button class="btn btn-primary" type="submit">Skip</button>
-                                <button class="btn btn-primary" type="submit">Ignore</button>
-                                <button class="btn btn-primary" type="submit">Delete</button>
+                            <div class="btnsCardContainer d-flex">
                             </div>
                             </div>
                         </div>
-                    </div>`
-                    prodCard.querySelectorAll('btn')[0].addEventListener('click')
-                    prodCard.querySelectorAll('btn')[1].addEventListener('click')
-                    prodCard.querySelectorAll('btn')[2].addEventListener('click')
-                    prodCard.querySelectorAll('btn')[3].addEventListener('click')
+                    </div>`;
+                    prodCard.outerHTML = cardHTML
+                    let curProdCard = $(`#product${i}`)
+                    let loadButton = loadButtons( curProdCard.children('.btnsCardContainer') , 4 )
+                    loadButton.next({
+                        content: "Add to Card",
+                        clickCallback: (e) => {
+                            let selectedCard = e.currentTarget.closest('.card')
+                            selectedCard.style.backgroundColor = 'green'
+                            cartList.push(el)}
+                        })
+                loadButton.next({
+                    content: "Delete Card",
+                    clickCallback: (e) => {}
+                })
+            }
+        )
+    }
+    const loadButtons = function* (elem , n ) {
+        for (i = 0; i < n; i++) {
+            let btnElem = document.createElement('button')
+            elem.append(btnElem)
+            let properties = yield
+            btnElem.outerHTML = `<button class="btn btn-primary" type="submit" >${properties.content}</button>`
+            btnElem.addEventListener('click', properties.clickCallback )
 
-                }
-            )
+
         }
+    }
     ;(async function Main() {
         let dataObj = {};
+        let cartList = [];
         await fetchProducts(dataObj);
-        console.log(dataObj);
-        renderProducts(dataObj.productFetchData);
+        console.log(dataObj,);
+        renderProducts(dataObj.productFetchData, cartList)
+        ;
     })()
 }
 
